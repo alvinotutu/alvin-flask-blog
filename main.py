@@ -78,7 +78,7 @@ class Comment(UserMixin, db.Model):
     blog_posts_id = db.Column(db.Integer, db.ForeignKey('blog_posts.id'))
     parent_post = relationship("BlogPost", back_populates="comments")
 # This line is only run when creating the db and corresponding tables
-# db.create_all()
+db.create_all()
 
 
 @login_manager.user_loader
