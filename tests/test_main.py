@@ -6,11 +6,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
-from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
+from test_forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
 import os
-
+import pytest
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
@@ -80,18 +80,18 @@ class Comment(UserMixin, db.Model):
 # This line is only run when creating the db and corresponding tables
 # db.create_all()
 
-
+@pytest.fixture
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
+@pytest.fixture
 @app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
     return render_template("index.html", all_posts=posts, current_user=current_user)
 
-
+@pytest.fixture
 @app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
@@ -113,7 +113,7 @@ def register():
             return redirect(url_for('get_all_posts'))
     return render_template("register.html", form=form, current_user=current_user)
 
-
+@pytest.fixture
 @app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
@@ -133,14 +133,14 @@ def login():
             return redirect(url_for('login'))
     return render_template("login.html", form=form, current_user=current_user)
 
-
+@pytest.fixture
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
 
-
+@pytest.fixture
 @app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
     form = CommentForm()
@@ -159,12 +159,12 @@ def show_post(post_id):
         db.session.commit()
     return render_template("post.html", post=requested_post, current_user=current_user, form=form, gravatar=gravatar)
 
-
+@pytest.fixture
 @app.route("/about")
 def about():
     return render_template("about.html", current_user=current_user)
 
-
+@pytest.fixture
 @app.route("/contact")
 def contact():
     return render_template("contact.html", current_user=current_user)
@@ -188,7 +188,7 @@ def admin_only(funct):
         return funct(*args, **kwargs)
     return decorated_function
 
-
+@pytest.fixture
 @app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
@@ -207,7 +207,7 @@ def add_new_post():
         return redirect(url_for("get_all_posts"))
     return render_template("make-post.html", form=form, current_user=current_user)
 
-
+@pytest.fixture
 @app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @admin_only
 def edit_post(post_id):
@@ -228,7 +228,7 @@ def edit_post(post_id):
 
     return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user)
 
-
+@pytest.fixture
 @app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
