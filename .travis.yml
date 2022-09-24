@@ -1,10 +1,20 @@
 language: python
 python:
-  - "3.10"
+  - "3.8"
 
-# command to install dependencies
 install:
   - pip install -r requirements.txt
-# command to run tests
-script:
-  - pytest
+
+script: ignore
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'eu-west-2'
+  app: 'flask-blog'
+  env: 'Flaskblog-env'
+  bucket_name: 'elasticbeanstalk-eu-west-2-644181909982'
+  bucket_path: 'alvin-blog'
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
